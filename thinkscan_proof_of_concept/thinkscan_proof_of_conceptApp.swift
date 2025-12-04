@@ -13,5 +13,7 @@ struct thinkscan_proof_of_conceptApp: App {
         WindowGroup {
             ContentView()
         }
+        .windowResizability(.contentSize)
+        .defaultSize(width: 600, height: 600)
     }
 }
