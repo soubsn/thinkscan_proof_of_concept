@@ -222,6 +222,7 @@ class FeedProcessingViewModel: ObservableObject, MovieFeedManagerDelegate, Camer
 	@MainActor
 	func startCamera() {
 	    cancelRequested = false
+		feedAlgorithmProcessor?.trackedItems.resetAll()
 
 	    // Ensure a camera manager exists
 	    if cameraManager == nil {
@@ -255,6 +256,7 @@ class FeedProcessingViewModel: ObservableObject, MovieFeedManagerDelegate, Camer
 	    guard let videoURL = selectedVideoURL else { return }
 
 	    cancelRequested = false
+		feedAlgorithmProcessor?.trackedItems.resetAll()
 
 	    processingState = .processing
 	    progress = 0.0
@@ -409,6 +411,7 @@ class FeedProcessingViewModel: ObservableObject, MovieFeedManagerDelegate, Camer
 						if self.cancelRequested {
 							// Remove temporary file if it exists and reset UI state
 							try? FileManager.default.removeItem(at: tempURL)
+							self.feedAlgorithmProcessor?.trackedItems.clearFrameResults()
 							DispatchQueue.main.async {
 								self.processingState = .idle
 								self.errorMessage = nil
@@ -438,6 +441,7 @@ class FeedProcessingViewModel: ObservableObject, MovieFeedManagerDelegate, Camer
 								self.processedVideoURL = destinationURL
 								self.errorMessage = nil
 								self.processingState = .completed
+								self.feedAlgorithmProcessor?.trackedItems.clearFrameResults()
 								print("Annotated video saved successfully to: \(destinationURL.path)")
 							}
 						} catch {

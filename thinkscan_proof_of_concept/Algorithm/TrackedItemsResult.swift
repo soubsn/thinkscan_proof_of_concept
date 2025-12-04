@@ -39,6 +39,19 @@ class TrackedItemsResult {
 	private var frameResultsForVideo: [FrameResult] = []
 	private let frameResultsQueue = DispatchQueue(label: "org.thinkscan.frameresults", attributes: .concurrent)
 	
+	/// Clears all tracked items and frame results immediately (thread-safe).
+	/// Call this before starting a new video/camera session to avoid reusing old boxes.
+	func resetAll() {
+		// Clear main tracked items
+		queue.sync(flags: .barrier) {
+			trackedItems.removeAll()
+		}
+		// Clear per-frame results used for video annotation
+		frameResultsQueue.sync(flags: .barrier) {
+			frameResultsForVideo.removeAll()
+		}
+	}
+	
 	/// Returns the number of tracked items (thread-safe)
 	var count: Int {
 		return queue.sync { trackedItems.count }
@@ -476,3 +489,4 @@ class TrackedItemsResult {
         }
     }
 }
+
