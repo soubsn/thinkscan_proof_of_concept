@@ -1,0 +1,19 @@
+# macOS
+.DS_Store
+
+# Xcode / Derived data
+xcuserdata/
+*.xcuserstate
+DerivedData/
+build/
+*.xcworkspace/xcuserdata/
+
+# Core ML artifacts (do NOT commit these)
+*.mlmodel
+*.mlpackage
+*.mlmodelc
+*.mlarchive
+
+# General
+*.xcarchive
+*.ipa
