@@ -128,6 +128,16 @@ class FeedProcessingViewModel: ObservableObject, MovieFeedManagerDelegate, Camer
 		}
 	}
 	
+	func didReceiveOriginalCameraBuffer(_ originalPixelBuffer: CVPixelBuffer?) {
+		// Store the original pixel buffer for video writing in background
+		guard let originalPixelBuffer = originalPixelBuffer else { return }
+		
+		videoWritingQueue.async { [weak self] in
+			guard let self = self else { return }
+			self.originalPixelBuffers.append(originalPixelBuffer)
+		}
+	}
+	
 	func didEncounterCameraError(_ error: String) {
 		print("cameraManager encountered an error: \(error)")
 		Task { @MainActor in
@@ -859,4 +869,3 @@ struct WindowAccessor: NSViewRepresentable {
 #Preview {
 	ContentView()
 }
-

@@ -1,4 +1,3 @@
-
 ///
 ///  MovieWriter.swift
 //
@@ -208,6 +207,11 @@ class MovieWriter {
           return
       }
 
+      // Flip the Core Graphics context to use a top-left origin so our top-left rects draw correctly
+      context.saveGState()
+      context.translateBy(x: 0, y: CGFloat(context.height))
+      context.scaleBy(x: 1.0, y: -1.0)
+
       if frameIndex == 0 {
           videoStartTime = frameResult.startTime
       }
@@ -229,6 +233,7 @@ class MovieWriter {
         }
       }
 
+      context.restoreGState()
       _ = context.makeImage()
       CVPixelBufferUnlockBaseAddress(pixelBuffer, cvLockFlag)
   }
@@ -248,6 +253,10 @@ class MovieWriter {
   }
   
   func draw(text:String, at point:CGPoint, in context:CGContext) {
+    // Ensure text renders upright when the context is flipped (top-left origin)
+    let previousTextMatrix = context.textMatrix
+    context.textMatrix = CGAffineTransform(scaleX: 1, y: -1)
+    
     let paragraph = NSMutableParagraphStyle()
     paragraph.lineBreakMode = NSLineBreakMode.byWordWrapping
     paragraph.alignment = .center // potentially this can be an input param too, but i guess in most use cases we want center align
@@ -262,6 +271,7 @@ class MovieWriter {
     let line = CTLineCreateWithAttributedString(attributedString)
     context.textPosition = point
     CTLineDraw(line, context)
+    context.textMatrix = previousTextMatrix
   }
   
   func resize(rect:CGRect, multiplier: CGContext) -> CGRect {

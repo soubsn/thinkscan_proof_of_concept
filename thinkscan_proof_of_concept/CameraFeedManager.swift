@@ -12,6 +12,8 @@ import AppKit
 protocol CameraFeedManagerDelegate: AnyObject {
     /// Delivers the pixel buffer from the camera feed
     func didReceiveCameraBuffer(_ pixelBuffer: CVPixelBuffer?)
+    /// Delivers the original unpadded pixel buffer for saving/annotation
+    func didReceiveOriginalCameraBuffer(_ originalPixelBuffer: CVPixelBuffer?)
     func didEncounterCameraError(_ error: String)
     func didStartCamera()
     func didStopCamera()
@@ -112,7 +114,7 @@ class CameraFeedManager: NSObject {
         
         // Get default video device (built-in camera)
         let discoverySession = AVCaptureDevice.DiscoverySession(
-            deviceTypes: [.builtInWideAngleCamera, .externalUnknown],
+            deviceTypes: [.builtInWideAngleCamera, .external],
             mediaType: .video,
             position: .unspecified
         )
@@ -338,12 +340,17 @@ extension CameraFeedManager: AVCaptureVideoDataOutputSampleBufferDelegate {
         
         frameCount += 1
         
+        // Keep original (un-padded) buffer for saving
+        let originalBuffer = pixelBuffer
+        
         // Process the pixel buffer (add padding to make it square)
         let processedBuffer = processPixelBuffer(pixelBuffer)
         
-        // Deliver to delegate
+        // Deliver both buffers to delegate on the main thread
         DispatchQueue.main.async { [weak self] in
-            self?.delegate?.didReceiveCameraBuffer(processedBuffer)
+            guard let self = self else { return }
+            self.delegate?.didReceiveOriginalCameraBuffer(originalBuffer)
+            self.delegate?.didReceiveCameraBuffer(processedBuffer)
         }
     }
     

@@ -79,14 +79,25 @@ class CoreMLObjectDetection {
   
   ///This bbox is returned with the origin in the upper left of the image (just like how UIView's expect the box to be)
   func bboxFor(object: VNRecognizedObjectObservation, onViewWith size:CGSize) -> CGRect {
-    let bboxOriginal = object.boundingBox ///box with origin in lower left
-    let bboxFinal = CGRect(
-      x:     Int(bboxOriginal.origin.x * size.width),
-      y:     Int(size.height - (bboxOriginal.origin.y + size.height)), ///make the origin in the upper left
-      width: Int(bboxOriginal.size.width * size.width),
-      height:Int(bboxOriginal.size.height * size.height)
-    )
-    return bboxFinal
+    let b = object.boundingBox
+    let x = b.origin.x * size.width
+    let y = (1.0 - b.origin.y - b.size.height) * size.height
+    let w = b.size.width * size.width
+    let h = b.size.height * size.height
+    return CGRect(x: x, y: y, width: w, height: h)
+  }
+
+  /// Converts a normalized Vision rect (origin at bottom-left) to a top-left–origin view rect of the given size.
+  /// - Parameters:
+  ///   - normalizedRect: A CGRect in normalized coordinates returned by Vision (0..1, origin at bottom-left).
+  ///   - viewSize: The destination view size in points/pixels.
+  /// - Returns: A CGRect in the view's top-left coordinate space.
+  func rectFromNormalizedVision(_ normalizedRect: CGRect, inViewOfSize viewSize: CGSize) -> CGRect {
+      let x = normalizedRect.origin.x * viewSize.width
+      let y = (1.0 - normalizedRect.origin.y - normalizedRect.size.height) * viewSize.height
+      let w = normalizedRect.size.width * viewSize.width
+      let h = normalizedRect.size.height * viewSize.height
+      return CGRect(x: x, y: y, width: w, height: h)
   }
   
   func bboxForResult(at index:Int, onViewWith size:CGSize) -> CGRect {
@@ -102,7 +113,7 @@ class CoreMLObjectDetection {
       print("error: index invalid. Could not obtain result for index \(index)")
       return ""
     }
-    return latestResults[0].labels[0].identifier
+    return latestResults[index].labels[0].identifier
   }
   
   func confidenceForResult(at index:Int) -> Float {
@@ -110,7 +121,7 @@ class CoreMLObjectDetection {
       print("error: index invalid. Could not obtain confidence for index \(index)")
       return 0
     }
-    return latestResults[0].labels[0].confidence
+    return latestResults[index].labels[0].confidence
   }
   
   func latestDetectedObjects(onViewWith size:CGSize) -> [DetectedObject] {
