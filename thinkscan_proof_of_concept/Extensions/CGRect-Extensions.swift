@@ -23,7 +23,7 @@ extension CGRect {
   }
   var asCSVString : String {
     get {
-      return "\(self.minX),\(self.minY),\(self.width),\(self.height)"
+      return "\(self.minX),\(self.minY),\(self.width),\(self.height),"
     }
   }
 }
